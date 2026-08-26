@@ -61,5 +61,9 @@ compile_commands.json
 
 # notes
 structure.txt
-
 agents/noise.txt
+*.txt
+ 
+# debug replys
+lob_bug_reply2
+lob_bug_reply3

@@ -26,11 +26,12 @@ void schedule_zi_wake_up
     // {
         auto wait = dist(gen); // in sec . as rate is in sec.
         uint64_t wait_ns = wait*1000000000 ;
-        AgentWakePayload p = {0 , AgentTier::ZI, zi.index};
+        AgentWakePayload p = {0 , zi.index, AgentTier::ZI};
 
         auto stock_locate = static_cast<uint16_t>(Symbol::AAPL);
 
-        Event e = { t + wait_ns , seq++ , 0, EventType::AgentWakeUP, MsgType::WakeUp, stock_locate, p};
+        Event e = { t + wait_ns , seq++ , 0, EventType::AgentWakeUP, MsgType::WakeUp, stock_locate,
+                    {zi.index, AgentTier::ZI}, p};
 
         q.push_back(e);
     // }
@@ -98,7 +99,8 @@ void zi_react
 
 
     EnterOrder p = {order_id, limit_price, shares, side , 0 } ;
-    Event e = {t + 50, seq++, 0 , EventType::OUCH, MsgType::EnterOrder,stock_locate, p } ;
+    Event e = {t + 50, seq++, 0 , EventType::OUCH, MsgType::EnterOrder,stock_locate,
+                {zi.index, AgentTier::ZI}, p } ;
 
     // cancellation logic: for same order.
     Event e2 ; 
@@ -109,7 +111,8 @@ void zi_react
 
     CancelReq p1 = {order_id, 0 }; // 0 = reduce the order to 0 shares.
 
-    e2 = {e.timestamp+t_ns , seq++ , 0, EventType::OUCH, MsgType::CancelReq , stock_locate , p1 };
+    e2 = {e.timestamp+t_ns , seq++ , 0, EventType::OUCH, MsgType::CancelReq , stock_locate ,
+          {zi.index, AgentTier::ZI}, p1 };
 
     q.push_back(e) ; // push event.
     q.push_back(e2);

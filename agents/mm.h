@@ -104,7 +104,8 @@ inline void mm_react(
     // 5. Cancel old quotes only when necessary
     for (const auto& pair : mm.active_orders) {
         CancelReq c_req{pair.first, 0};
-        q.push_back(Event{hit_time, seq++, 0, EventType::OUCH, MsgType::CancelReq, locate, c_req});
+        q.push_back(Event{hit_time, seq++, 0, EventType::OUCH, MsgType::CancelReq, locate,
+            {mm.index, AgentTier::MM}, c_req});
     }
     mm.active_orders.clear();
 
@@ -126,8 +127,10 @@ inline void mm_react(
         uint64_t b2 = ord_id++;
         mm.active_orders.push_back({b1, 'B'});
         mm.active_orders.push_back({b2, 'B'});
-        q.push_back(Event{hit_time + 1, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate, {EnterOrder{b1, bid_p1, 200, 'B', 0}}});
-        q.push_back(Event{hit_time + 2, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate, {EnterOrder{b2, bid_p2, 400, 'B', 0}}});
+        q.push_back(Event{hit_time + 1, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate,
+            {mm.index, AgentTier::MM}, {EnterOrder{b1, bid_p1, 200, 'B', 0}}});
+        q.push_back(Event{hit_time + 2, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate,
+            {mm.index, AgentTier::MM}, {EnterOrder{b2, bid_p2, 400, 'B', 0}}});
     }
 
     if (quote_ask) {
@@ -135,7 +138,9 @@ inline void mm_react(
         uint64_t a2 = ord_id++;
         mm.active_orders.push_back({a1, 'S'});
         mm.active_orders.push_back({a2, 'S'});
-        q.push_back(Event{hit_time + 3, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate, {EnterOrder{a1, ask_p1, 200, 'S', 0}}});
-        q.push_back(Event{hit_time + 4, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate, {EnterOrder{a2, ask_p2, 400, 'S', 0}}});
+        q.push_back(Event{hit_time + 3, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate,
+            { mm.index, AgentTier::MM}, {EnterOrder{a1, ask_p1, 200, 'S', 0}}});
+        q.push_back(Event{hit_time + 4, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate,
+            { mm.index, AgentTier::MM}, {EnterOrder{a2, ask_p2, 400, 'S', 0}}});
     }
 }

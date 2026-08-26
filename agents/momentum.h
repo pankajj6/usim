@@ -112,5 +112,6 @@ inline void momentum_react(
     mom.last_action_time = hit_time;
     mom.trailing_price = current_price; // Reset reference price
 
-    q.push_back(Event{hit_time, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate, req});
+    q.push_back(Event{hit_time, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate,
+        {mom.index, AgentTier::MOM}, req});
 }

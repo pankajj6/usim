@@ -235,12 +235,34 @@ int main()
             case EventType::S_OUCH:
             {
                 // pending work: 
+                auto tier = event.agent.tier ;
 
-                // auto order_id = event.p. ; 
+                if(tier == AgentTier::MM){
+                    auto mm = mm_pool[event.agent.index] ;
+                    if (mm.agent_clock <= event.timestamp + mm.l1_ns){
+                        // update agent_clock
+                        mm.agent_clock = event.timestamp + mm.l1_ns ;
+                    
+                        mm_react(mm, event, state.mid_price, reaction_queue, gen, seq_number,
+                            available_order_id, parser_lob.TICK_SIZE) ;
+                    }
+                }
+                else if (tier == AgentTier::MOM){
+                    auto mom = mom_pool[event.agent.index] ;
+                    if (mom.agent_clock <= event.timestamp + mom.l1_ns){
+                        // update agent_clock
+                        mom.agent_clock = event.timestamp + mom.l1_ns ;
+                    
+                        momentum_react(mom, event, state.last_trade_price, reaction_queue, gen, seq_number, 
+                            available_order_id, parser_lob.TICK_SIZE) ;
+                    }
+                }
+                else if (tier == AgentTier::ZI){
+                    auto zi = zi_pool[event.agent.index] ;
+                    // well zi doesn't care about this private messsages , so skip...
+                }
 
-                // auto [tier , idx] = order_id_to_agent_map.find(order_id) ;
 
-                // if(tier == AgentTier)
                 // agent reacts
                 // if (agent.agent_clock <= event.timestamp + agent.l1_ns){
                 //     agent.agent_clock = event.timestamp + agent.l1_ns ;
