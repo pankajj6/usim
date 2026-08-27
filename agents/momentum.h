@@ -45,7 +45,7 @@ inline void initialize_momentum(std::vector<MomentumTrader>& mom_pool, std::mt19
 
 inline void momentum_react(
     MomentumTrader& mom,
-    const Event& itch_event,
+    const Event& event,
     uint32_t current_price,
     std::deque<Event>& q,
     std::mt19937& gen,
@@ -54,13 +54,13 @@ inline void momentum_react(
     uint64_t tick_size
 ) {
     // 1. INVENTORY TRACKING: Match side explicitly
-    if (itch_event.msg_type == MsgType::OrderExec && itch_event.p.itch_execute.order_id == mom.active_order_id) {
-        if (mom.last_side == 'B') mom.inventory += static_cast<int32_t>(itch_event.p.itch_execute.executed_shares);
-        else if (mom.last_side == 'S') mom.inventory -= static_cast<int32_t>(itch_event.p.itch_execute.executed_shares);
+    if (event.msg_type == MsgType::Fill && event.p.fill.order_id == mom.active_order_id) {
+        if (mom.last_side == 'B') mom.inventory += static_cast<int32_t>(event.p.fill.fill_shares);
+        else if (mom.last_side == 'S') mom.inventory -= static_cast<int32_t>(event.p.fill.fill_shares);
     }
 
     // only evaluate on ITCH Execution events (ignore cancels/adds)
-    if (itch_event.msg_type != MsgType::OrderExec) return;
+    if (event.msg_type != MsgType::OrderExec) return;
 
     // initialize trailing price on first trade
     if (mom.trailing_price == 0) {
@@ -69,7 +69,7 @@ inline void momentum_react(
     }
 
     // cooldown: Momentum traders don't trade more than once every 100ms (100,000,000 ns)
-    if (itch_event.timestamp - mom.last_action_time < 100000000) return;
+    if ( (event.timestamp + mom.l1_ns) - mom.last_action_time < 100000000) return;
 
     // calculate fractional return against trailing price
     double ret = static_cast<double>(static_cast<int32_t>(current_price) - static_cast<int32_t>(mom.trailing_price)) / mom.trailing_price;
@@ -90,7 +90,7 @@ inline void momentum_react(
 
     // calculate arrival time with jitter
     std::uniform_int_distribution<int> jitter_dist(-1000, 1000);
-    uint64_t hit_time = itch_event.timestamp + mom.l1_ns + mom.l2_ns + jitter_dist(gen);
+    uint64_t hit_time = event.timestamp + mom.l1_ns + mom.l2_ns + jitter_dist(gen);
 
     // Cap aggressiveness at 10 ticks away from current price to prevent vacuuming the book to infinity/zero
     uint32_t collar = 10 * static_cast<uint32_t>(tick_size);
@@ -103,15 +103,15 @@ inline void momentum_react(
         agg_price = (current_price > collar) ? (current_price - collar) : tick_size;
     }
 
-    auto locate = static_cast<uint16_t>(Symbol::AAPL) ;
+    auto locate = static_cast<uint16_t>(event.stock_locate) ;
     mom.active_order_id = ord_id++;
     mom.last_side = side;
 
     EnterOrder req{mom.active_order_id , agg_price, 100, side, 0} ; 
 
-    mom.last_action_time = hit_time;
+    mom.last_action_time = event.timestamp + mom.l1_ns;
     mom.trailing_price = current_price; // Reset reference price
 
-    q.push_back(Event{hit_time, seq++, itch_event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate,
+    q.push_back(Event{hit_time, seq++, event.sequence_num, EventType::OUCH, MsgType::EnterOrder, locate,
         {mom.index, AgentTier::MOM}, req});
 }

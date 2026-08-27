@@ -59,5 +59,5 @@ ax3.set_xlabel("Simulation Time (Seconds)")
 ax3.grid(True, linestyle="--", alpha=0.4, color=PAPER_GRAY)
 
 plt.tight_layout()
-plt.savefig("market_state_stabilized2.png", dpi=300)
-print("SUCCESS: Image generated safely and saved as 'market_state_stabilized2.png'")
+plt.savefig("market_state_stabilized.png", dpi=300)
+print("SUCCESS: Image generated safely and saved as 'market_state_stabilized.png'")

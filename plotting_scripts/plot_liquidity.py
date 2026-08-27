@@ -59,5 +59,5 @@ ax2.legend(loc="upper left", framealpha=0.9)
 ax2.grid(True, linestyle="--", alpha=0.4, color=PAPER_GRAY)
 
 plt.tight_layout()
-plt.savefig("liquidity_depth_analysis2.png", dpi=300)
-print("SUCCESS: Liquidity analysis saved to 'liquidity_depth_analysis2.png'")
+plt.savefig("liquidity_depth_analysis.png", dpi=300)
+print("SUCCESS: Liquidity analysis saved to 'liquidity_depth_analysis.png'")

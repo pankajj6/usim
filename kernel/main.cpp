@@ -111,7 +111,7 @@ int main()
     std::deque<Event> feed_hq;
 
     uint32_t lamda = Config::order_rate / Config::total_zi ; 
-    uint32_t theta = 1000 ; // using L = lam*W . 400 = 5*w .  L = total order in book at any momemt.
+    uint32_t theta = 100 ; // using L = lam*W . 400 = 5*w .  L = total order in book at any momemt.
     // w == average lifespan of a order in sec. theta was once 0.0001 also , once it was 0.01 also once it was 0.1 also , it has been tested . might have some issues .
 
     std::vector<MM> mm_pool(20) ;
@@ -201,8 +201,8 @@ int main()
                         // update agent_clock
                         mm.agent_clock = event.timestamp + mm.l1_ns ;
                     
-                        mm_react(mm, event, state.mid_price, reaction_queue, gen, seq_number,
-                            available_order_id, parser_lob.TICK_SIZE) ;
+                        mm_react(mm, event, kernel_parser_engine, state.mid_price, reaction_queue, gen, seq_number,
+                            available_order_id) ;
                     }
                     // otherwise skip.
                 }
@@ -243,8 +243,8 @@ int main()
                         // update agent_clock
                         mm.agent_clock = event.timestamp + mm.l1_ns ;
                     
-                        mm_react(mm, event, state.mid_price, reaction_queue, gen, seq_number,
-                            available_order_id, parser_lob.TICK_SIZE) ;
+                        mm_react(mm, event, kernel_parser_engine, state.mid_price, reaction_queue, gen, seq_number,
+                            available_order_id) ;
                     }
                 }
                 else if (tier == AgentTier::MOM){
@@ -327,8 +327,8 @@ int main()
     std::cout << "Total Events: " << events_processed << std::endl ;
     std::cout << "Total Time: " << d << std::endl ;
     std::cout << "Total ZI agents: " << Config::total_zi << std::endl ;
-    std::cout << "Total MMakersagents: " << mm_pool.size() << std::endl ;
-    std::cout << "Total Momentum agents: " << mom_pool.size() << std::endl ;
+    std::cout << "Total Market Makers : " << mm_pool.size() << std::endl ;
+    std::cout << "Total Momentum traders : " << mom_pool.size() << std::endl ;
     std::cout << "Simulation Duration(in minutes): " << ((Config::MARKET_CLOSE_NS - Config::MARKET_OPEN_NS )/60000000000) << std::endl ;
 
     std::cout << "ZI orders per sec: " << Config::order_rate << std::endl ;
